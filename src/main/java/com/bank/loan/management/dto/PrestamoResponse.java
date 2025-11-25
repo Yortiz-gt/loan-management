@@ -18,13 +18,11 @@ public class PrestamoResponse {
     private BigDecimal montoPrincipal;
     private Integer plazoMeses;
     private BigDecimal tasaInteres;
-    private LocalDateTime fechaAprobacion;
+    private Date fechaAprobacion;
     private BigDecimal montoPendiente;
     private String usuarioCreacion;
     private LocalDateTime fechaCreacion;
     private String usuarioModificacion;
     private LocalDateTime fechaModificacion;
 
-    public PrestamoResponse(Integer prestamoID, SolicitudPrestamoResponse solicitudResponse, ClienteResponse clienteResponse, BigDecimal montoPrincipal, Integer plazoMeses, BigDecimal tasaInteres, Date fechaAprobacion, BigDecimal montoPendiente, String usuarioCreacion, LocalDateTime fechaCreacion, String usuarioModificacion, LocalDateTime fechaModificacion) {
-    }
 }

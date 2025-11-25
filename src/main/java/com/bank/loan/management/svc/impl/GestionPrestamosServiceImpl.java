@@ -2,9 +2,7 @@ package com.bank.loan.management.svc.impl;
 
 import com.bank.loan.management.dao.ClienteRepository;
 import com.bank.loan.management.dao.PrestamoRepository;
-import com.bank.loan.management.exception.ClienteNotFoundException;
 import com.bank.loan.management.exception.PrestamoNotFoundException;
-import com.bank.loan.management.model.Cliente;
 import com.bank.loan.management.model.Prestamo;
 import com.bank.loan.management.svc.GestionPrestamosService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +24,11 @@ public class GestionPrestamosServiceImpl implements GestionPrestamosService {
         return prestamoRepository.findAllWithDetails();
     }
 
+
     @Override
     public List<Prestamo> getPrestamosByCliente(Integer clienteId) {
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ClienteNotFoundException("Cliente no encontrado con ID: " + clienteId));
-        return prestamoRepository.findByClienteWithDetails(cliente);
+        return prestamoRepository.findByClienteIdWithDetails(clienteId);
     }
-
     @Override
     public Prestamo getPrestamoById(Integer prestamoId) {
         return prestamoRepository.findById(prestamoId)

@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -102,13 +103,20 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
 
         SolicitudPrestamo solicitudActualizada = solicitudPrestamoRepository.save(solicitud);
 
+        BigDecimal montoPrincipal = solicitudActualizada.getMontoSolicitado();
+        BigDecimal tasaInteres = solicitudActualizada.getTipoPlazo().getTasaInteres();
+        Integer plazoMeses = solicitudActualizada.getTipoPlazo().getMeses();
+
+        BigDecimal interesTotal = montoPrincipal.multiply(tasaInteres).multiply(new BigDecimal(plazoMeses));
+        BigDecimal montoPendiente = montoPrincipal.add(interesTotal);
+
         Prestamo nuevoPrestamo = new Prestamo();
         nuevoPrestamo.setSolicitud(solicitudActualizada);
         nuevoPrestamo.setCliente(solicitudActualizada.getCliente());
-        nuevoPrestamo.setMontoPrincipal(solicitudActualizada.getMontoSolicitado());
-        nuevoPrestamo.setPlazoMeses(solicitudActualizada.getTipoPlazo().getMeses());
-        nuevoPrestamo.setTasaInteres(solicitudActualizada.getTipoPlazo().getTasaInteres());
-        nuevoPrestamo.setMontoPendiente(solicitudActualizada.getMontoSolicitado());
+        nuevoPrestamo.setMontoPrincipal(montoPrincipal);
+        nuevoPrestamo.setPlazoMeses(plazoMeses);
+        nuevoPrestamo.setTasaInteres(tasaInteres);
+        nuevoPrestamo.setMontoPendiente(montoPendiente);
         nuevoPrestamo.setUsuarioCreacion("SYSTEM_PRESTAMO");
         nuevoPrestamo.setFechaAprobacion(new Date());
         nuevoPrestamo.setFechaCreacion(LocalDateTime.now());

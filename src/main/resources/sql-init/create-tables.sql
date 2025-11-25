@@ -9,7 +9,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EstadoSolicitud')
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TipoPlazo')
     CREATE TABLE TipoPlazo (
         PlazoID INT PRIMARY KEY,
-        Meses INT NOT NULL UNIQUE,
+        Meses INT NOT NULL,
         TasaInteres DECIMAL(5, 4) NOT NULL
     );
 
