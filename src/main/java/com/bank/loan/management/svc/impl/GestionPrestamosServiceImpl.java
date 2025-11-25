@@ -8,10 +8,8 @@ import com.bank.loan.management.model.Prestamo;
 import com.bank.loan.management.svc.GestionPrestamosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GestionPrestamosServiceImpl implements GestionPrestamosService {
@@ -26,14 +24,14 @@ public class GestionPrestamosServiceImpl implements GestionPrestamosService {
     public List<PrestamoResponse> getAllPrestamos() {
         return prestamoRepository.findAllWithDetails().stream()
                 .map(prestamoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<PrestamoResponse> getPrestamosByCliente(Integer clienteId) {
         return prestamoRepository.findByClienteIdWithDetails(clienteId).stream()
                 .map(prestamoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService {
@@ -63,7 +62,7 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
     public List<SolicitudPrestamoResponse> getAllSolicitudes() {
         return solicitudPrestamoRepository.findAll().stream()
                 .map(solicitudPrestamoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -71,7 +70,7 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
         Cliente cliente = findClienteById(clienteId);
         return solicitudPrestamoRepository.findByCliente(cliente).stream()
                 .map(solicitudPrestamoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

@@ -12,11 +12,9 @@ import com.bank.loan.management.svc.GestionPagosService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GestionPagosServiceImpl implements GestionPagosService {
@@ -64,7 +62,7 @@ public class GestionPagosServiceImpl implements GestionPagosService {
         Prestamo prestamo = findPrestamoById(prestamoId);
         return pagoRepository.findByPrestamo(prestamo).stream()
                 .map(pagoMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Prestamo findPrestamoById(Integer prestamoId) {
