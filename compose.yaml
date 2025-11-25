@@ -3,7 +3,12 @@ services:
     image: 'mcr.microsoft.com/mssql/server:latest'
     environment:
       - 'ACCEPT_EULA=yes'
-      - 'MSSQL_PID=express'
+      - 'MSSQL_PID=Developer'
       - 'MSSQL_SA_PASSWORD=verYs3cret'
     ports:
       - '1433:1433'
+    volumes:
+      # Mapea nuestra carpeta local 'sql-init' al directorio de inicialización de Docker.
+      # Todos los scripts .sql en esta carpeta se ejecutarán al iniciar.
+      - ./sql-init:/docker-entrypoint-initdb.d
+    restart: on-failure
