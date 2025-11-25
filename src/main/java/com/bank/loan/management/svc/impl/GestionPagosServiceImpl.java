@@ -2,7 +2,10 @@ package com.bank.loan.management.svc.impl;
 
 import com.bank.loan.management.dao.PagoRepository;
 import com.bank.loan.management.dao.PrestamoRepository;
+import com.bank.loan.management.dto.PagoRequest;
+import com.bank.loan.management.dto.PagoResponse;
 import com.bank.loan.management.exception.PrestamoNotFoundException;
+import com.bank.loan.management.mapper.PagoMapper;
 import com.bank.loan.management.model.Pago;
 import com.bank.loan.management.model.Prestamo;
 import com.bank.loan.management.svc.GestionPagosService;
@@ -13,20 +16,25 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GestionPagosServiceImpl implements GestionPagosService {
 
     @Autowired
     private PagoRepository pagoRepository;
+
     @Autowired
     private PrestamoRepository prestamoRepository;
 
+    @Autowired
+    private PagoMapper pagoMapper;
+
     @Override
     @Transactional
-    public Pago registrarPago(Integer prestamoId, BigDecimal montoPago) {
-        Prestamo prestamo = prestamoRepository.findById(prestamoId)
-                .orElseThrow(() -> new PrestamoNotFoundException("Préstamo no encontrado con ID: " + prestamoId));
+    public PagoResponse registrarPago(PagoRequest pagoRequest) {
+        Prestamo prestamo = findPrestamoById(pagoRequest.getPrestamoID());
+        BigDecimal montoPago = pagoRequest.getMontoPago();
 
         if (montoPago.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto del pago debe ser positivo.");
@@ -36,7 +44,7 @@ public class GestionPagosServiceImpl implements GestionPagosService {
         }
 
         prestamo.setMontoPendiente(prestamo.getMontoPendiente().subtract(montoPago));
-        prestamo.setUsuarioModificacion("SYSTEM_PAGO"); 
+        prestamo.setUsuarioModificacion("SYSTEM_PAGO");
         prestamo.setFechaModificacion(LocalDateTime.now());
         prestamoRepository.save(prestamo);
 
@@ -47,13 +55,20 @@ public class GestionPagosServiceImpl implements GestionPagosService {
         pago.setUsuarioCreacion("SYSTEM_PAGO");
         pago.setFechaCreacion(LocalDateTime.now());
 
-        return pagoRepository.save(pago);
+        Pago nuevoPago = pagoRepository.save(pago);
+        return pagoMapper.toDto(nuevoPago);
     }
 
     @Override
-    public List<Pago> getPagosByPrestamo(Integer prestamoId) {
-        Prestamo prestamo = prestamoRepository.findById(prestamoId)
+    public List<PagoResponse> getPagosByPrestamo(Integer prestamoId) {
+        Prestamo prestamo = findPrestamoById(prestamoId);
+        return pagoRepository.findByPrestamo(prestamo).stream()
+                .map(pagoMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private Prestamo findPrestamoById(Integer prestamoId) {
+        return prestamoRepository.findById(prestamoId)
                 .orElseThrow(() -> new PrestamoNotFoundException("Préstamo no encontrado con ID: " + prestamoId));
-        return pagoRepository.findByPrestamo(prestamo);
     }
 }

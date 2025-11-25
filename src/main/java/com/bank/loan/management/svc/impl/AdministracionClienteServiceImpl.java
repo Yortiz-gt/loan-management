@@ -1,9 +1,13 @@
 package com.bank.loan.management.svc.impl;
 
 import com.bank.loan.management.dao.ClienteRepository;
+import com.bank.loan.management.dao.PrestamoRepository;
 import com.bank.loan.management.dao.SolicitudPrestamoRepository;
+import com.bank.loan.management.dto.ClienteRequest;
+import com.bank.loan.management.dto.ClienteResponse;
 import com.bank.loan.management.exception.ClienteAlreadyExistsException;
 import com.bank.loan.management.exception.ClienteNotFoundException;
+import com.bank.loan.management.mapper.ClienteMapper;
 import com.bank.loan.management.model.Cliente;
 import com.bank.loan.management.svc.AdministracionClienteService;
 import jakarta.transaction.Transactional;
@@ -18,80 +22,85 @@ import java.time.LocalDateTime;
 public class AdministracionClienteServiceImpl implements AdministracionClienteService {
 
     public static final String CLIENTE_NOT_FOUND = "Cliente no encontrado con ID: ";
+
     @Autowired
     private ClienteRepository clienteRepository;
 
     @Autowired
     private SolicitudPrestamoRepository solicitudPrestamoRepository;
 
+    @Autowired
+    private PrestamoRepository prestamoRepository;
+
+    @Autowired
+    private ClienteMapper clienteMapper;
 
     @Override
     @Transactional
-    public Cliente agregarCliente(Cliente cliente) {
+    public ClienteResponse agregarCliente(ClienteRequest clienteRequest) {
+        if (clienteRepository.findByNumeroIdentificacion(clienteRequest.getNumeroIdentificacion()).isPresent()) {
+            throw new ClienteAlreadyExistsException("Ya existe un cliente con el número de identificación: " + clienteRequest.getNumeroIdentificacion());
+        }
+        if (clienteRepository.findByCorreoElectronico(clienteRequest.getCorreoElectronico()).isPresent()) {
+            throw new ClienteAlreadyExistsException("Ya existe un cliente con el correo electrónico: " + clienteRequest.getCorreoElectronico());
+        }
 
-        if (clienteRepository.findByNumeroIdentificacion(cliente.getNumeroIdentificacion()).isPresent()) {
-            throw new ClienteAlreadyExistsException("Ya existe un cliente con el número de identificación: " + cliente.getNumeroIdentificacion());
-        }
-        if (clienteRepository.findByCorreoElectronico(cliente.getCorreoElectronico()).isPresent()) {
-            throw new ClienteAlreadyExistsException("Ya existe un cliente con el correo electrónico: " + cliente.getCorreoElectronico());
-        }
+        Cliente cliente = clienteMapper.toEntity(clienteRequest);
         cliente.setFechaCreacion(LocalDateTime.now());
         cliente.setUsuarioCreacion("SYSTEM");
 
-        return clienteRepository.save(cliente);
+        Cliente nuevoCliente = clienteRepository.save(cliente);
+        return clienteMapper.toDto(nuevoCliente);
     }
-
 
     @Override
-    public Page<Cliente> getAllClientes(Pageable pageable) {
-        return clienteRepository.findAll(pageable);
+    public Page<ClienteResponse> getAllClientes(Pageable pageable) {
+        return clienteRepository.findAll(pageable).map(clienteMapper::toDto);
     }
-
 
     @Override
-    public Cliente getClienteById(Integer id) {
-        return clienteRepository.findById(id)
-                .orElseThrow(() -> new ClienteNotFoundException(CLIENTE_NOT_FOUND + id));
+    public ClienteResponse getClienteById(Integer id) {
+        Cliente cliente = findClienteById(id);
+        return clienteMapper.toDto(cliente);
     }
-
 
     @Override
     @Transactional
-    public Cliente editarCliente(Integer id, Cliente clienteDetails) {
-        return clienteRepository.findById(id).map(cliente -> {
-            clienteRepository.findByNumeroIdentificacion(clienteDetails.getNumeroIdentificacion())
-                    .ifPresent(existingCliente -> {
-                        if (!existingCliente.getClienteID().equals(id)) {
-                            throw new ClienteAlreadyExistsException("Ya existe otro cliente con el número de identificación: " + clienteDetails.getNumeroIdentificacion());
-                        }
-                    });
-            clienteRepository.findByCorreoElectronico(clienteDetails.getCorreoElectronico())
-                    .ifPresent(existingCliente -> {
-                        if (!existingCliente.getClienteID().equals(id)) {
-                            throw new ClienteAlreadyExistsException("Ya existe otro cliente con el correo electrónico: " + clienteDetails.getCorreoElectronico());
-                        }
-                    });
+    public ClienteResponse editarCliente(Integer id, ClienteRequest clienteRequest) {
+        Cliente cliente = findClienteById(id);
 
-            cliente.setNombre(clienteDetails.getNombre());
-            cliente.setApellido(clienteDetails.getApellido());
-            cliente.setNumeroIdentificacion(clienteDetails.getNumeroIdentificacion());
-            cliente.setFechaNacimiento(clienteDetails.getFechaNacimiento());
-            cliente.setDireccion(clienteDetails.getDireccion());
-            cliente.setCorreoElectronico(clienteDetails.getCorreoElectronico());
-            cliente.setTelefono(clienteDetails.getTelefono());
-            cliente.setUsuarioModificacion("SYSTEM_UPDATE");
-            cliente.setFechaModificacion(LocalDateTime.now());
-            return clienteRepository.save(cliente);
-        }).orElseThrow(() -> new ClienteNotFoundException(CLIENTE_NOT_FOUND + id));
+        clienteRepository.findByNumeroIdentificacion(clienteRequest.getNumeroIdentificacion())
+                .ifPresent(existingCliente -> {
+                    if (!existingCliente.getClienteID().equals(id)) {
+                        throw new ClienteAlreadyExistsException("Ya existe otro cliente con el número de identificación: " + clienteRequest.getNumeroIdentificacion());
+                    }
+                });
+        clienteRepository.findByCorreoElectronico(clienteRequest.getCorreoElectronico())
+                .ifPresent(existingCliente -> {
+                    if (!existingCliente.getClienteID().equals(id)) {
+                        throw new ClienteAlreadyExistsException("Ya existe otro cliente con el correo electrónico: " + clienteRequest.getCorreoElectronico());
+                    }
+                });
+
+        clienteMapper.updateEntityFromDto(clienteRequest, cliente);
+        cliente.setUsuarioModificacion("SYSTEM_UPDATE");
+        cliente.setFechaModificacion(LocalDateTime.now());
+
+        Cliente clienteActualizado = clienteRepository.save(cliente);
+        return clienteMapper.toDto(clienteActualizado);
     }
 
     @Override
     @Transactional
     public void eliminarCliente(Integer id) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new ClienteNotFoundException(CLIENTE_NOT_FOUND + id));
-
+        Cliente cliente = findClienteById(id);
+        prestamoRepository.deleteByCliente(cliente);
         solicitudPrestamoRepository.deleteByCliente(cliente);
         clienteRepository.delete(cliente);
+    }
+
+    private Cliente findClienteById(Integer id) {
+        return clienteRepository.findById(id)
+                .orElseThrow(() -> new ClienteNotFoundException(CLIENTE_NOT_FOUND + id));
     }
 }

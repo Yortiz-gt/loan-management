@@ -1,11 +1,11 @@
 package com.bank.loan.management.svc;
 
-import com.bank.loan.management.model.Pago;
+import com.bank.loan.management.dto.PagoRequest;
+import com.bank.loan.management.dto.PagoResponse;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface GestionPagosService {
-    Pago registrarPago(Integer prestamoId, BigDecimal montoPago);
-    List<Pago> getPagosByPrestamo(Integer prestamoId);
+    PagoResponse registrarPago(PagoRequest pagoRequest);
+    List<PagoResponse> getPagosByPrestamo(Integer prestamoId);
 }

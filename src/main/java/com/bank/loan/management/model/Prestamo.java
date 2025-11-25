@@ -1,19 +1,18 @@
 package com.bank.loan.management.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "Prestamo")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"solicitud", "cliente"})
+@EqualsAndHashCode(exclude = {"solicitud", "cliente"})
 @NoArgsConstructor
-@AllArgsConstructor
 public class Prestamo {
 
     @Id

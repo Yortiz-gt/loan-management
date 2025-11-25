@@ -1,14 +1,14 @@
 package com.bank.loan.management.svc;
 
-import com.bank.loan.management.model.Cliente;
+import com.bank.loan.management.dto.ClienteRequest;
+import com.bank.loan.management.dto.ClienteResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
 public interface AdministracionClienteService {
-    Cliente agregarCliente(Cliente cliente);
-    Page<Cliente> getAllClientes(Pageable pageable);
-    Cliente getClienteById(Integer id);
-    Cliente editarCliente(Integer id, Cliente clienteDetails);
+    ClienteResponse agregarCliente(ClienteRequest clienteRequest);
+    Page<ClienteResponse> getAllClientes(Pageable pageable);
+    ClienteResponse getClienteById(Integer id);
+    ClienteResponse editarCliente(Integer id, ClienteRequest clienteRequest);
     void eliminarCliente(Integer id);
 }
