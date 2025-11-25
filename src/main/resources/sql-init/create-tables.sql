@@ -22,7 +22,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Cliente')
         NumeroIdentificacion VARCHAR(20) NOT NULL UNIQUE,
         FechaNacimiento DATE NOT NULL,
         Direccion VARCHAR(255) NULL,
-        CorreoElectronico VARCHAR(100) NOT NULL UNIQUE,
+        CorreoElectronico VARCHAR(100) NOT NULL,
         Telefono VARCHAR(15) NOT NULL,
         UsuarioCreacion VARCHAR(50) NOT NULL,
         FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(),
