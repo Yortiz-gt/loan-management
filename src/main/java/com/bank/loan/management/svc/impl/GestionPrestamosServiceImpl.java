@@ -7,9 +7,11 @@ import com.bank.loan.management.mapper.PrestamoMapper;
 import com.bank.loan.management.model.Prestamo;
 import com.bank.loan.management.svc.GestionPrestamosService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class GestionPrestamosServiceImpl implements GestionPrestamosService {
@@ -21,17 +23,15 @@ public class GestionPrestamosServiceImpl implements GestionPrestamosService {
     private PrestamoMapper prestamoMapper;
 
     @Override
-    public List<PrestamoResponse> getAllPrestamos() {
-        return prestamoRepository.findAllWithDetails().stream()
-                .map(prestamoMapper::toDto)
-                .toList();
+    public Page<PrestamoResponse> getAllPrestamos(Pageable pageable) {
+        return prestamoRepository.findAllWithDetails(pageable)
+                .map(prestamoMapper::toDto);
     }
 
     @Override
-    public List<PrestamoResponse> getPrestamosByCliente(Integer clienteId) {
-        return prestamoRepository.findByClienteIdWithDetails(clienteId).stream()
-                .map(prestamoMapper::toDto)
-                .toList();
+    public Page<PrestamoResponse> getPrestamosByCliente(Integer clienteId, Pageable pageable) {
+        return prestamoRepository.findByClienteIdWithDetails(clienteId, pageable)
+                .map(prestamoMapper::toDto);
     }
 
     @Override

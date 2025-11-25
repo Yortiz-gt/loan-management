@@ -11,10 +11,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +37,7 @@ class GestionPrestamosServiceImplTest {
 
     private Prestamo prestamo;
     private PrestamoResponse prestamoResponse;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -46,42 +50,45 @@ class GestionPrestamosServiceImplTest {
                 1, null, null, new BigDecimal("10000.00"), 12, new BigDecimal("0.05"),
                 null, new BigDecimal("5000.00"), null, null, null, null
         );
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
-    void cuandoGetAllPrestamos_deberiaDevolverListaDePrestamoResponse() {
+    void cuandoGetAllPrestamos_deberiaDevolverPaginaDePrestamoResponse() {
         
-        when(prestamoRepository.findAllWithDetails()).thenReturn(Collections.singletonList(prestamo));
+        Page<Prestamo> prestamoPage = new PageImpl<>(Collections.singletonList(prestamo));
+        when(prestamoRepository.findAllWithDetails(pageable)).thenReturn(prestamoPage);
         when(prestamoMapper.toDto(any(Prestamo.class))).thenReturn(prestamoResponse);
 
         
-        List<PrestamoResponse> resultados = gestionPrestamosService.getAllPrestamos();
+        Page<PrestamoResponse> resultados = gestionPrestamosService.getAllPrestamos(pageable);
 
         
         assertNotNull(resultados);
         assertFalse(resultados.isEmpty());
-        assertEquals(1, resultados.size());
-        assertEquals(prestamoResponse.getPrestamoID(), resultados.get(0).getPrestamoID());
-        verify(prestamoRepository, times(1)).findAllWithDetails();
+        assertEquals(1, resultados.getTotalElements());
+        assertEquals(prestamoResponse.getPrestamoID(), resultados.getContent().get(0).getPrestamoID());
+        verify(prestamoRepository, times(1)).findAllWithDetails(pageable);
         verify(prestamoMapper, times(1)).toDto(any(Prestamo.class));
     }
 
     @Test
-    void cuandoGetPrestamosByCliente_conClienteExistente_deberiaDevolverListaDePrestamoResponse() {
+    void cuandoGetPrestamosByCliente_conClienteExistente_deberiaDevolverPaginaDePrestamoResponse() {
         
         Integer clienteId = 1;
-        when(prestamoRepository.findByClienteIdWithDetails(clienteId)).thenReturn(Collections.singletonList(prestamo));
+        Page<Prestamo> prestamoPage = new PageImpl<>(Collections.singletonList(prestamo));
+        when(prestamoRepository.findByClienteIdWithDetails(clienteId, pageable)).thenReturn(prestamoPage);
         when(prestamoMapper.toDto(any(Prestamo.class))).thenReturn(prestamoResponse);
 
         
-        List<PrestamoResponse> resultados = gestionPrestamosService.getPrestamosByCliente(clienteId);
+        Page<PrestamoResponse> resultados = gestionPrestamosService.getPrestamosByCliente(clienteId, pageable);
 
         
         assertNotNull(resultados);
         assertFalse(resultados.isEmpty());
-        assertEquals(1, resultados.size());
-        assertEquals(prestamoResponse.getPrestamoID(), resultados.get(0).getPrestamoID());
-        verify(prestamoRepository, times(1)).findByClienteIdWithDetails(clienteId);
+        assertEquals(1, resultados.getTotalElements());
+        assertEquals(prestamoResponse.getPrestamoID(), resultados.getContent().get(0).getPrestamoID());
+        verify(prestamoRepository, times(1)).findByClienteIdWithDetails(clienteId, pageable);
         verify(prestamoMapper, times(1)).toDto(any(Prestamo.class));
     }
 

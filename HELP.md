@@ -28,6 +28,7 @@ Durante el desarrollo y la refactorización, se han aplicado los siguientes prin
 *   **Lombok para Reducir Boilerplate:** Se utiliza Lombok para generar automáticamente getters, setters, constructores, etc., manteniendo el código más conciso. Se ha tenido cuidado con `@Data` en entidades JPA, reemplazándolo por `@Getter`, `@Setter`, `@ToString(exclude = ...)` y `@EqualsAndHashCode(exclude = ...)` para evitar problemas con la carga perezosa y las relaciones.
 *   **API de Fecha y Hora Moderna:** Se utiliza `java.time` (LocalDate, LocalDateTime) de forma consistente para el manejo de fechas y horas, que es más robusta e inmutable que `java.util.Date`.
 *   **Contenerización con Docker Compose:** Se utiliza Docker Compose para definir y ejecutar la aplicación y sus servicios dependientes (como la base de datos SQL Server) en contenedores. Esto asegura un entorno de desarrollo consistente y fácil de configurar para todos los desarrolladores.
+*   **Paginación Configurable:** La API implementa paginación para listados, con valores por defecto y máximos configurables a través de `application.properties`. La paginación es 1-basada para el usuario y se convierte a 0-basada internamente para Spring Data JPA.
 
 ## 3. Cómo Extender el Proyecto
 

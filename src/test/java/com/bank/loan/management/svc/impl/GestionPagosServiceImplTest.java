@@ -14,10 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +44,7 @@ class GestionPagosServiceImplTest {
     private PagoRequest pagoRequest;
     private Pago pago;
     private PagoResponse pagoResponse;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -58,6 +62,7 @@ class GestionPagosServiceImplTest {
         pago.setMontoPago(new BigDecimal("100.00"));
 
         pagoResponse = new PagoResponse(1, 1, new BigDecimal("100.00"), null, null, null);
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
@@ -118,19 +123,22 @@ class GestionPagosServiceImplTest {
     }
 
     @Test
-    void cuandoGetPagosByPrestamo_conIdExistente_deberiaDevolverListaDePagos() {
+    void cuandoGetPagosByPrestamo_conIdExistente_deberiaDevolverPaginaDePagos() {
         
         when(prestamoRepository.findById(1)).thenReturn(Optional.of(prestamo));
-        when(pagoRepository.findByPrestamo(prestamo)).thenReturn(Collections.singletonList(pago));
+        Page<Pago> pagoPage = new PageImpl<>(Collections.singletonList(pago));
+        when(pagoRepository.findByPrestamo(prestamo, pageable)).thenReturn(pagoPage);
         when(pagoMapper.toDto(pago)).thenReturn(pagoResponse);
 
         
-        List<PagoResponse> resultados = gestionPagosService.getPagosByPrestamo(1);
+        Page<PagoResponse> resultados = gestionPagosService.getPagosByPrestamo(1, pageable);
 
         
         assertFalse(resultados.isEmpty());
-        assertEquals(1, resultados.size());
-        assertEquals(1, resultados.get(0).getPagoID());
+        assertEquals(1, resultados.getTotalElements());
+        assertEquals(1, resultados.getContent().get(0).getPagoID());
+        verify(pagoRepository, times(1)).findByPrestamo(prestamo, pageable);
+        verify(pagoMapper, times(1)).toDto(any(Pago.class));
     }
 
     @Test
@@ -139,6 +147,6 @@ class GestionPagosServiceImplTest {
         when(prestamoRepository.findById(99)).thenReturn(Optional.empty());
 
         
-        assertThrows(PrestamoNotFoundException.class, () -> gestionPagosService.getPagosByPrestamo(99));
+        assertThrows(PrestamoNotFoundException.class, () -> gestionPagosService.getPagosByPrestamo(99, pageable));
     }
 }

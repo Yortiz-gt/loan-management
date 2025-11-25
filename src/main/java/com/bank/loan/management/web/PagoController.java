@@ -5,11 +5,14 @@ import com.bank.loan.management.dto.PagoResponse;
 import com.bank.loan.management.svc.GestionPagosService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/pagos")
@@ -18,6 +21,12 @@ public class PagoController {
     @Autowired
     private GestionPagosService gestionPagosService;
 
+    @Value("${app.pagination.default-page-size:10}")
+    private int defaultPageSize;
+
+    @Value("${app.pagination.max-page-size:25}")
+    private int maxPageSize;
+
     @PostMapping
     public ResponseEntity<PagoResponse> registrarPago(@Valid @RequestBody PagoRequest pagoRequest) {
         PagoResponse nuevoPago = gestionPagosService.registrarPago(pagoRequest);
@@ -25,8 +34,14 @@ public class PagoController {
     }
 
     @GetMapping("/prestamo/{prestamoId}")
-    public ResponseEntity<List<PagoResponse>> getPagosByPrestamo(@PathVariable Integer prestamoId) {
-        List<PagoResponse> pagos = gestionPagosService.getPagosByPrestamo(prestamoId);
-        return ResponseEntity.ok(pagos);
+    public ResponseEntity<Page<PagoResponse>> getPagosByPrestamo(
+            @PathVariable Integer prestamoId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "${app.pagination.default-page-size}") int size) {
+
+        int actualSize = Math.min(size, maxPageSize);
+        Pageable pageable = PageRequest.of(page - 1, actualSize);
+        Page<PagoResponse> pagosPage = gestionPagosService.getPagosByPrestamo(prestamoId, pageable);
+        return ResponseEntity.ok(pagosPage);
     }
 }

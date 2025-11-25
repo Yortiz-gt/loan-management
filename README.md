@@ -9,6 +9,7 @@ Este proyecto es un sistema de gestión de préstamos desarrollado con Spring Bo
 *   **Gestión de Préstamos:** Consulta de préstamos aprobados y cálculo de saldos pendientes.
 *   **Gestión de Pagos:** Registro de pagos, validación de montos y actualización automática del monto pendiente de los préstamos.
 *   **Manejo de Excepciones:** Respuestas claras y específicas para errores comunes (ej. recurso no encontrado, cliente ya existente, estado inválido).
+*   **Paginación:** Implementación de paginación configurable (tamaño por defecto y máximo) y 1-basada para listados de recursos.
 *   **Pruebas Unitarias:** Cobertura de pruebas exhaustiva para la lógica de negocio crítica en la capa de servicios.
 *   **Reporte de Cobertura de Código:** Integración con JaCoCo para generar informes de cobertura.
 *   **Docker Compose:** Configuración automatizada y consistente del entorno de desarrollo (base de datos SQL Server y aplicación Spring Boot) con un solo comando.
@@ -149,11 +150,11 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         ```
     *   **Response (201 Created):** `ClienteResponse`
 *   **`GET /api/clientes?page={page}&size={size}`**
-    *   **Descripción:** Obtiene una lista paginada de todos los clientes.
+    *   **Descripción:** Obtiene una página de clientes.
     *   **Parámetros de Query:**
-        *   `page` (opcional, default 0): Número de página.
-        *   `size` (opcional, default 10): Tamaño de la página.
-    *   **Response (200 OK):** `List<ClienteResponse>`
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<ClienteResponse>` (objeto Page que contiene la lista de clientes y metadatos de paginación)
 *   **`GET /api/clientes/id-cliente/{id}`**
     *   **Descripción:** Obtiene un cliente específico por su ID.
     *   **Path Variable:** `id` (Integer) - ID del cliente.
@@ -181,13 +182,19 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         }
         ```
     *   **Response (201 Created):** `SolicitudPrestamoResponse`
-*   **`GET /api/solicitudes`**
-    *   **Descripción:** Obtiene todas las solicitudes de préstamos.
-    *   **Response (200 OK):** `List<SolicitudPrestamoResponse>`
-*   **`GET /api/solicitudes/cliente-id/{clienteId}`**
-    *   **Descripción:** Obtiene todas las solicitudes de préstamo asociadas a un cliente específico.
+*   **`GET /api/solicitudes?page={page}&size={size}`**
+    *   **Descripción:** Obtiene una página de solicitudes de préstamos.
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<SolicitudPrestamoResponse>`
+*   **`GET /api/solicitudes/cliente-id/{clienteId}?page={page}&size={size}`**
+    *   **Descripción:** Obtiene una página de solicitudes de préstamo asociadas a un cliente específico.
     *   **Path Variable:** `clienteId` (Integer) - ID del cliente.
-    *   **Response (200 OK):** `List<SolicitudPrestamoResponse>`
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<SolicitudPrestamoResponse>`
 *   **`GET /api/solicitudes/prestamo-id/{id}`**
     *   **Descripción:** Obtiene una solicitud de préstamo específica por su ID.
     *   **Path Variable:** `id` (Integer) - ID de la solicitud.
@@ -215,13 +222,19 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
 
 ### 3. Préstamos (`/api/prestamos`)
 
-*   **`GET /api/prestamos`**
-    *   **Descripción:** Obtiene todos los préstamos aprobados en el sistema.
-    *   **Response (200 OK):** `List<PrestamoResponse>`
-*   **`GET /api/prestamos/cliente-id/{clienteId}`**
-    *   **Descripción:** Obtiene todos los préstamos asociados a un cliente específico.
+*   **`GET /api/prestamos?page={page}&size={size}`**
+    *   **Descripción:** Obtiene una página de todos los préstamos aprobados en el sistema.
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<PrestamoResponse>`
+*   **`GET /api/prestamos/cliente-id/{clienteId}?page={page}&size={size}`**
+    *   **Descripción:** Obtiene una página de préstamos asociados a un cliente específico.
     *   **Path Variable:** `clienteId` (Integer) - ID del cliente.
-    *   **Response (200 OK):** `List<PrestamoResponse>`
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<PrestamoResponse>`
 *   **`GET /api/prestamos/prestamo-id/{id}`**
     *   **Descripción:** Obtiene un préstamo específico por su ID.
     *   **Path Variable:** `id` (Integer) - ID del préstamo.
@@ -243,10 +256,13 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         }
         ```
     *   **Response (201 Created):** `PagoResponse`
-*   **`GET /api/pagos/prestamo/{prestamoId}`**
-    *   **Descripción:** Obtiene todos los pagos realizados para un préstamo específico.
+*   **`GET /api/pagos/prestamo/{prestamoId}?page={page}&size={size}`**
+    *   **Descripción:** Obtiene una página de todos los pagos realizados para un préstamo específico.
     *   **Path Variable:** `prestamoId` (Integer) - ID del préstamo.
-    *   **Response (200 OK):** `List<PagoResponse>`
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<PagoResponse>`
 
 ## Ejecución de Pruebas y Reporte de Cobertura
 

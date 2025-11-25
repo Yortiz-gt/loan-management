@@ -5,7 +5,7 @@ import com.bank.loan.management.dto.SolicitudPrestamoRequest;
 import com.bank.loan.management.dto.SolicitudPrestamoResponse;
 import com.bank.loan.management.exception.ClienteNotFoundException;
 import com.bank.loan.management.exception.InvalidSolicitudStatusException;
-import com.bank.loan.management.exception.SolicitudNotFoundException;
+import com.bank.loan.management.exception.SolicitudNotFoundException; 
 import com.bank.loan.management.mapper.SolicitudPrestamoMapper;
 import com.bank.loan.management.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +14,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +47,7 @@ class SolicitudPrestamosServiceImplTest {
     private EstadoSolicitud estadoRechazado;
     private SolicitudPrestamo solicitud;
     private SolicitudPrestamoResponse solicitudResponse;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -64,11 +67,11 @@ class SolicitudPrestamosServiceImplTest {
         solicitud.setMontoSolicitado(new BigDecimal("5000.00"));
 
         solicitudResponse = new SolicitudPrestamoResponse(1, null, new BigDecimal("5000.00"), null, null, null, null, null, null, null, null);
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
     void cuandoCrearSolicitud_conDatosValidos_deberiaGuardarSolicitud() {
-        
         when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
         when(tipoPlazoRepository.findById(1)).thenReturn(Optional.of(tipoPlazo));
         when(estadoSolicitudRepository.findById(1)).thenReturn(Optional.of(estadoEnProceso));
@@ -78,6 +81,7 @@ class SolicitudPrestamosServiceImplTest {
         
         SolicitudPrestamoResponse resultado = solicitudPrestamosService.crearSolicitud(solicitudRequest);
         
+        
         assertNotNull(resultado);
         assertEquals(1, resultado.getSolicitudID());
         verify(solicitudPrestamoRepository, times(1)).save(any(SolicitudPrestamo.class));
@@ -85,7 +89,7 @@ class SolicitudPrestamosServiceImplTest {
 
     @Test
     void cuandoCrearSolicitud_conClienteNoExistente_deberiaLanzarExcepcion() {
-
+        
         when(clienteRepository.findById(anyInt())).thenReturn(Optional.empty());
 
         
@@ -114,34 +118,40 @@ class SolicitudPrestamosServiceImplTest {
     }
 
     @Test
-    void cuandoGetAllSolicitudes_deberiaDevolverListaDeSolicitudes() {
+    void cuandoGetAllSolicitudes_deberiaDevolverPaginaDeSolicitudes() {
         
-        when(solicitudPrestamoRepository.findAll()).thenReturn(Collections.singletonList(solicitud));
+        Page<SolicitudPrestamo> solicitudPage = new PageImpl<>(Collections.singletonList(solicitud));
+        when(solicitudPrestamoRepository.findAll(pageable)).thenReturn(solicitudPage);
         when(solicitudPrestamoMapper.toDto(any(SolicitudPrestamo.class))).thenReturn(solicitudResponse);
 
         
-        List<SolicitudPrestamoResponse> resultados = solicitudPrestamosService.getAllSolicitudes();
+        Page<SolicitudPrestamoResponse> resultados = solicitudPrestamosService.getAllSolicitudes(pageable);
 
         
         assertFalse(resultados.isEmpty());
-        assertEquals(1, resultados.size());
-        assertEquals(1, resultados.get(0).getSolicitudID());
+        assertEquals(1, resultados.getTotalElements());
+        assertEquals(1, resultados.getContent().get(0).getSolicitudID());
+        verify(solicitudPrestamoRepository, times(1)).findAll(pageable);
+        verify(solicitudPrestamoMapper, times(1)).toDto(any(SolicitudPrestamo.class));
     }
 
     @Test
-    void cuandoGetSolicitudesByCliente_conClienteExistente_deberiaDevolverListaDeSolicitudes() {
+    void cuandoGetSolicitudesByCliente_conClienteExistente_deberiaDevolverPaginaDeSolicitudes() {
         
         when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
-        when(solicitudPrestamoRepository.findByCliente(cliente)).thenReturn(Collections.singletonList(solicitud));
+        Page<SolicitudPrestamo> solicitudPage = new PageImpl<>(Collections.singletonList(solicitud));
+        when(solicitudPrestamoRepository.findByCliente(cliente, pageable)).thenReturn(solicitudPage);
         when(solicitudPrestamoMapper.toDto(any(SolicitudPrestamo.class))).thenReturn(solicitudResponse);
 
         
-        List<SolicitudPrestamoResponse> resultados = solicitudPrestamosService.getSolicitudesByCliente(1);
+        Page<SolicitudPrestamoResponse> resultados = solicitudPrestamosService.getSolicitudesByCliente(1, pageable);
 
         
         assertFalse(resultados.isEmpty());
-        assertEquals(1, resultados.size());
-        assertEquals(1, resultados.get(0).getSolicitudID());
+        assertEquals(1, resultados.getTotalElements());
+        assertEquals(1, resultados.getContent().get(0).getSolicitudID());
+        verify(solicitudPrestamoRepository, times(1)).findByCliente(cliente, pageable);
+        verify(solicitudPrestamoMapper, times(1)).toDto(any(SolicitudPrestamo.class));
     }
 
     @Test
@@ -150,7 +160,7 @@ class SolicitudPrestamosServiceImplTest {
         when(clienteRepository.findById(anyInt())).thenReturn(Optional.empty());
 
         
-        assertThrows(ClienteNotFoundException.class, () -> solicitudPrestamosService.getSolicitudesByCliente(99));
+        assertThrows(ClienteNotFoundException.class, () -> solicitudPrestamosService.getSolicitudesByCliente(99, pageable));
     }
 
     @Test

@@ -11,10 +11,12 @@ import com.bank.loan.management.model.Prestamo;
 import com.bank.loan.management.svc.GestionPagosService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class GestionPagosServiceImpl implements GestionPagosService {
@@ -58,11 +60,10 @@ public class GestionPagosServiceImpl implements GestionPagosService {
     }
 
     @Override
-    public List<PagoResponse> getPagosByPrestamo(Integer prestamoId) {
+    public Page<PagoResponse> getPagosByPrestamo(Integer prestamoId, Pageable pageable) {
         Prestamo prestamo = findPrestamoById(prestamoId);
-        return pagoRepository.findByPrestamo(prestamo).stream()
-                .map(pagoMapper::toDto)
-                .toList();
+        return pagoRepository.findByPrestamo(prestamo, pageable)
+                .map(pagoMapper::toDto);
     }
 
     private Prestamo findPrestamoById(Integer prestamoId) {

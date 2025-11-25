@@ -5,18 +5,19 @@ import com.bank.loan.management.dto.SolicitudPrestamoRequest;
 import com.bank.loan.management.dto.SolicitudPrestamoResponse;
 import com.bank.loan.management.exception.ClienteNotFoundException;
 import com.bank.loan.management.exception.InvalidSolicitudStatusException;
-import com.bank.loan.management.exception.SolicitudNotFoundException;
+import com.bank.loan.management.exception.SolicitudNotFoundException; 
 import com.bank.loan.management.mapper.SolicitudPrestamoMapper;
 import com.bank.loan.management.model.*;
 import com.bank.loan.management.svc.SolicitudPrestamosService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
-
 @Service
 public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService {
 
@@ -59,18 +60,16 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
     }
 
     @Override
-    public List<SolicitudPrestamoResponse> getAllSolicitudes() {
-        return solicitudPrestamoRepository.findAll().stream()
-                .map(solicitudPrestamoMapper::toDto)
-                .toList();
+    public Page<SolicitudPrestamoResponse> getAllSolicitudes(Pageable pageable) {
+        return solicitudPrestamoRepository.findAll(pageable)
+                .map(solicitudPrestamoMapper::toDto);
     }
 
     @Override
-    public List<SolicitudPrestamoResponse> getSolicitudesByCliente(Integer clienteId) {
+    public Page<SolicitudPrestamoResponse> getSolicitudesByCliente(Integer clienteId, Pageable pageable) {
         Cliente cliente = findClienteById(clienteId);
-        return solicitudPrestamoRepository.findByCliente(cliente).stream()
-                .map(solicitudPrestamoMapper::toDto)
-                .toList();
+        return solicitudPrestamoRepository.findByCliente(cliente, pageable)
+                .map(solicitudPrestamoMapper::toDto);
     }
 
     @Override
