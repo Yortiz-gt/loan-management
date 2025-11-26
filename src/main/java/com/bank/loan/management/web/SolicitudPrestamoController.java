@@ -2,6 +2,7 @@ package com.bank.loan.management.web;
 
 import com.bank.loan.management.dto.SolicitudPrestamoRequest;
 import com.bank.loan.management.dto.SolicitudPrestamoResponse;
+import com.bank.loan.management.dto.TipoPlazoResponse;
 import com.bank.loan.management.svc.SolicitudPrestamosService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,5 +75,22 @@ public class SolicitudPrestamoController {
         String detalles = payload.get("detalles");
         SolicitudPrestamoResponse solicitudRechazada = solicitudPrestamosService.rechazarSolicitud(id, detalles);
         return ResponseEntity.ok(solicitudRechazada);
+    }
+
+    @GetMapping("/tipos-plazo")
+    public ResponseEntity<Page<TipoPlazoResponse>> getAllTipoPlazo(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "${app.pagination.default-page-size}") int size) {
+
+        int actualSize = Math.min(size, maxPageSize);
+        Pageable pageable = PageRequest.of(page - 1, actualSize);
+        Page<TipoPlazoResponse> tiposPlazoPage = solicitudPrestamosService.getAllTipoPlazo(pageable);
+        return ResponseEntity.ok(tiposPlazoPage);
+    }
+
+    @GetMapping("/tipos-plazo/{id}")
+    public ResponseEntity<TipoPlazoResponse> getTipoPlazoById(@PathVariable Integer id) {
+        TipoPlazoResponse tipoPlazo = solicitudPrestamosService.getTipoPlazoById(id);
+        return ResponseEntity.ok(tipoPlazo);
     }
 }

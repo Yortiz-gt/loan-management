@@ -10,6 +10,7 @@ Este proyecto es un sistema de gestión de préstamos desarrollado con Spring Bo
 *   **Gestión de Pagos:** Registro de pagos, validación de montos y actualización automática del monto pendiente de los préstamos.
 *   **Manejo de Excepciones:** Respuestas claras y específicas para errores comunes (ej. recurso no encontrado, cliente ya existente, estado inválido).
 *   **Paginación:** Implementación de paginación configurable (tamaño por defecto y máximo) y 1-basada para listados de recursos.
+*   **Consulta de Catálogos:** Endpoint para consultar tipos de plazo disponibles.
 *   **Pruebas Unitarias:** Cobertura de pruebas exhaustiva para la lógica de negocio crítica en la capa de servicios.
 *   **Reporte de Cobertura de Código:** Integración con JaCoCo para generar informes de cobertura.
 *   **Docker Compose:** Configuración automatizada y consistente del entorno de desarrollo (base de datos SQL Server y aplicación Spring Boot) con un solo comando.
@@ -219,6 +220,13 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         }
         ```
     *   **Response (200 OK):** `SolicitudPrestamoResponse` (con estado RECHAZADO)
+*   **`GET /api/solicitudes/tipos-plazo`**
+    *   **Descripción:** Obtiene una lista de todos los tipos de plazo disponibles para las solicitudes de préstamo.
+    *   **Response (200 OK):** `List<TipoPlazoResponse>`
+*   **`GET /api/solicitudes/tipos-plazo/{id}`**
+    *   **Descripción:** Obtiene un tipo de plazo específico por su ID.
+    *   **Path Variable:** `id` (Integer) - ID del tipo de plazo.
+    *   **Response (200 OK):** `TipoPlazoResponse`
 
 ### 3. Préstamos (`/api/prestamos`)
 

@@ -71,7 +71,7 @@ Es fundamental ejecutar las pruebas regularmente y revisar el informe de cobertu
 
 ## 5. Solución de Problemas Comunes
 
-*   **`ClienteNotFoundException` / `PrestamoNotFoundException` / `SolicitudNotFoundException` / `ResourceNotFoundException`:** Asegúrate de que el ID proporcionado en la URL o en el cuerpo de la petición corresponde a un recurso existente en la base de datos.
+*   **`ClienteNotFoundException` / `PrestamoNotFoundException` / `SolicitudNotFoundException`:** Asegúrate de que el ID proporcionado en la URL o en el cuerpo de la petición corresponde a un recurso existente en la base de datos.
 *   **`ClienteAlreadyExistsException`:** Estás intentando crear un cliente con un `numeroIdentificacion` o `correoElectronico` que ya está registrado.
 *   **`InvalidSolicitudStatusException`:** Estás intentando aprobar o rechazar una solicitud que no se encuentra en estado "EN_PROCESO".
 *   **Problemas de Conexión a la Base de Datos:** Verifica la configuración en `application.properties` (URL, usuario, contraseña) y asegúrate de que tu instancia de SQL Server esté en ejecución y accesible. Si usas Docker Compose, verifica que los contenedores estén levantados y saludables (`docker compose ps`).

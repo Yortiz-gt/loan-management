@@ -3,10 +3,12 @@ package com.bank.loan.management.svc.impl;
 import com.bank.loan.management.dao.*;
 import com.bank.loan.management.dto.SolicitudPrestamoRequest;
 import com.bank.loan.management.dto.SolicitudPrestamoResponse;
+import com.bank.loan.management.dto.TipoPlazoResponse;
 import com.bank.loan.management.exception.ClienteNotFoundException;
 import com.bank.loan.management.exception.InvalidSolicitudStatusException;
 import com.bank.loan.management.exception.SolicitudNotFoundException; 
 import com.bank.loan.management.mapper.SolicitudPrestamoMapper;
+import com.bank.loan.management.mapper.TipoPlazoMapper;
 import com.bank.loan.management.model.*;
 import com.bank.loan.management.svc.SolicitudPrestamosService;
 import jakarta.transaction.Transactional;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
+
 @Service
 public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService {
 
@@ -38,6 +41,8 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
     private PrestamoRepository prestamoRepository;
     @Autowired
     private SolicitudPrestamoMapper solicitudPrestamoMapper;
+    @Autowired
+    private TipoPlazoMapper tipoPlazoMapper; 
 
     @Override
     @Transactional
@@ -109,6 +114,19 @@ public class SolicitudPrestamosServiceImpl implements SolicitudPrestamosService 
 
         SolicitudPrestamo solicitudActualizada = solicitudPrestamoRepository.save(solicitud);
         return solicitudPrestamoMapper.toDto(solicitudActualizada);
+    }
+
+    @Override
+    public Page<TipoPlazoResponse> getAllTipoPlazo(Pageable pageable) {
+        return tipoPlazoRepository.findAll(pageable)
+                .map(tipoPlazoMapper::toDto);
+    }
+
+    @Override
+    public TipoPlazoResponse getTipoPlazoById(Integer plazoId) {
+        TipoPlazo tipoPlazo = tipoPlazoRepository.findById(plazoId)
+                .orElseThrow(() -> new SolicitudNotFoundException("Tipo de plazo no encontrado con ID: " + plazoId));
+        return tipoPlazoMapper.toDto(tipoPlazo);
     }
 
     private void crearPrestamoDesdeSolicitud(SolicitudPrestamo solicitud) {
