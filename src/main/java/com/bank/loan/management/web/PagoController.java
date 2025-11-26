@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 
 @RestController
 @RequestMapping("/api/pagos")
@@ -43,5 +45,11 @@ public class PagoController {
         Pageable pageable = PageRequest.of(page - 1, actualSize);
         Page<PagoResponse> pagosPage = gestionPagosService.getPagosByPrestamo(prestamoId, pageable);
         return ResponseEntity.ok(pagosPage);
+    }
+
+    @GetMapping("/prestamo/{prestamoId}/total-pagado")
+    public ResponseEntity<BigDecimal> getTotalPagado(@PathVariable Integer prestamoId) {
+        BigDecimal totalPagado = gestionPagosService.calcularTotalPagado(prestamoId);
+        return ResponseEntity.ok(totalPagado);
     }
 }

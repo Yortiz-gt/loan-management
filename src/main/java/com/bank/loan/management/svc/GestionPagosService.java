@@ -5,8 +5,10 @@ import com.bank.loan.management.dto.PagoResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 
 public interface GestionPagosService {
     PagoResponse registrarPago(PagoRequest pagoRequest);
     Page<PagoResponse> getPagosByPrestamo(Integer prestamoId, Pageable pageable);
+    BigDecimal calcularTotalPagado(Integer prestamoId);
 }

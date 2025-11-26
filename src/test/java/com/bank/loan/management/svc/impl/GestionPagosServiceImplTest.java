@@ -149,4 +149,34 @@ class GestionPagosServiceImplTest {
         
         assertThrows(PrestamoNotFoundException.class, () -> gestionPagosService.getPagosByPrestamo(99, pageable));
     }
+
+    @Test
+    void cuandoCalcularTotalPagado_conPrestamoExistente_deberiaDevolverSumaCorrecta() {
+        
+        Integer prestamoId = 1;
+        BigDecimal totalPagadoEsperado = new BigDecimal("750.00");
+        when(prestamoRepository.findById(prestamoId)).thenReturn(Optional.of(prestamo));
+        when(pagoRepository.sumMontoPagoByPrestamoId(prestamoId)).thenReturn(totalPagadoEsperado);
+
+        
+        BigDecimal resultado = gestionPagosService.calcularTotalPagado(prestamoId);
+
+        
+        assertNotNull(resultado);
+        assertEquals(totalPagadoEsperado, resultado);
+        verify(prestamoRepository, times(1)).findById(prestamoId);
+        verify(pagoRepository, times(1)).sumMontoPagoByPrestamoId(prestamoId);
+    }
+
+    @Test
+    void cuandoCalcularTotalPagado_conPrestamoNoExistente_deberiaLanzarExcepcion() {
+        
+        Integer prestamoId = 99;
+        when(prestamoRepository.findById(prestamoId)).thenReturn(Optional.empty());
+
+        
+        assertThrows(PrestamoNotFoundException.class, () -> gestionPagosService.calcularTotalPagado(prestamoId));
+        verify(prestamoRepository, times(1)).findById(prestamoId);
+        verify(pagoRepository, never()).sumMontoPagoByPrestamoId(anyInt());
+    }
 }

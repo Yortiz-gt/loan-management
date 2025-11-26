@@ -13,6 +13,6 @@ public interface SolicitudPrestamosService {
     SolicitudPrestamoResponse getSolicitudById(Integer solicitudId);
     SolicitudPrestamoResponse aprobarSolicitud(Integer solicitudId, String detallesAprobacion);
     SolicitudPrestamoResponse rechazarSolicitud(Integer solicitudId, String detallesRechazo);
-    Page<TipoPlazoResponse> getAllTipoPlazo(Pageable pageable); // Modificado para paginación
+    Page<TipoPlazoResponse> getAllTipoPlazo(Pageable pageable);
     TipoPlazoResponse getTipoPlazoById(Integer plazoId);
 }

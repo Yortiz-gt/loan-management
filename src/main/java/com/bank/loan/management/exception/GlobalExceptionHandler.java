@@ -97,6 +97,7 @@ public class GlobalExceptionHandler {
                 request.getDescription(false),
                 HttpStatus.BAD_REQUEST.value()
         );
+        log.error("Error de validación: {}", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 

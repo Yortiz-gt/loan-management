@@ -66,6 +66,12 @@ public class GestionPagosServiceImpl implements GestionPagosService {
                 .map(pagoMapper::toDto);
     }
 
+    @Override
+    public BigDecimal calcularTotalPagado(Integer prestamoId) {
+        findPrestamoById(prestamoId);
+        return pagoRepository.sumMontoPagoByPrestamoId(prestamoId);
+    }
+
     private Prestamo findPrestamoById(Integer prestamoId) {
         return prestamoRepository.findById(prestamoId)
                 .orElseThrow(() -> new PrestamoNotFoundException("Préstamo no encontrado con ID: " + prestamoId));

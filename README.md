@@ -221,8 +221,11 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         ```
     *   **Response (200 OK):** `SolicitudPrestamoResponse` (con estado RECHAZADO)
 *   **`GET /api/solicitudes/tipos-plazo`**
-    *   **Descripción:** Obtiene una lista de todos los tipos de plazo disponibles para las solicitudes de préstamo.
-    *   **Response (200 OK):** `List<TipoPlazoResponse>`
+    *   **Descripción:** Obtiene una página de todos los tipos de plazo disponibles para las solicitudes de préstamo.
+    *   **Parámetros de Query:**
+        *   `page` (opcional, default 1): Número de página (1-basado).
+        *   `size` (opcional, default 10, max 25): Tamaño de la página.
+    *   **Response (200 OK):** `Page<TipoPlazoResponse>`
 *   **`GET /api/solicitudes/tipos-plazo/{id}`**
     *   **Descripción:** Obtiene un tipo de plazo específico por su ID.
     *   **Path Variable:** `id` (Integer) - ID del tipo de plazo.
@@ -271,6 +274,10 @@ La aplicación expone una API RESTful. La base URL es `http://localhost:8080`.
         *   `page` (opcional, default 1): Número de página (1-basado).
         *   `size` (opcional, default 10, max 25): Tamaño de la página.
     *   **Response (200 OK):** `Page<PagoResponse>`
+*   **`GET /api/pagos/prestamo/{prestamoId}/total-pagado`**
+    *   **Descripción:** Obtiene el monto total pagado para un préstamo específico.
+    *   **Path Variable:** `prestamoId` (Integer) - ID del préstamo.
+    *   **Response (200 OK):** `BigDecimal` (el monto total pagado)
 
 ## Ejecución de Pruebas y Reporte de Cobertura
 
