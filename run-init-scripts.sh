@@ -1,20 +1,21 @@
-#!/bin/sh
-# run-init-scripts.sh
+#!/bin/bash
+set -e
 
 echo "Esperando a que SQL Server esté listo..."
-/opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1
-while [ $? -ne 0 ]
+
+# Esperar hasta que SQL Server acepte conexiones
+until /opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -Q "SELECT 1" &> /dev/null
 do
-    echo "SQL Server no está listo aún, reintentando en 5 segundos..."
+    echo "SQL Server no está listo, esperando..."
     sleep 5
-    /opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1
 done
-echo "SQL Server está listo."
 
-echo "Ejecutando scripts de inicialización de la base de datos..."
+echo "SQL Server listo. Ejecutando scripts..."
 
-/opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -i /sql-init/01-create-database.sql
-/opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -i /sql-init/02-create-tables.sql
-/opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -i /sql-init/03-insert-initial-data.sql
+for f in /sql-init/*.sql
+do
+  echo "Ejecutando $f..."
+  /opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$SA_PASSWORD" -d master -i "$f"
+done
 
-echo "Inicialización de la base de datos completada."
+echo "Scripts ejecutados correctamente."
