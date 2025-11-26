@@ -1,14 +1,8 @@
-# Dockerfile.init-db
-# Usa una imagen base que contenga las herramientas de SQL Server (sqlcmd)
 FROM mcr.microsoft.com/mssql-tools
 
-# Copia los scripts SQL y el script de ejecución al contenedor
-# La ruta de origen es relativa al contexto de construcción (la raíz del proyecto)
 COPY ./src/main/resources/sql-init /sql-init
 COPY ./run-init-scripts.sh /run-init-scripts.sh
 
-# Dar permisos de ejecución al script
 RUN chmod +x /run-init-scripts.sh
 
-# Establecer el script como el punto de entrada del contenedor
-ENTRYPOINT ["/run-init-scripts.sh"]
+ENTRYPOINT ["/bin/sh", "/run-init-scripts.sh"]
